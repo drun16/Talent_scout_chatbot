@@ -1,10 +1,28 @@
 
 import streamlit as st
 from utils import get_ai_response
+from terms import show_terms_and_conditions
 
 
 def main():
     st.set_page_config(page_title="TalentScout AI", page_icon="🤖")
+
+    # --- STATE MANAGEMENT ---
+    # Initialize the terms acceptance state if it doesn't exist
+    if "accepted_terms" not in st.session_state:
+        st.session_state.accepted_terms = False
+
+    # --- LOGIC FLOW ---
+    # If terms are NOT accepted yet, show the Terms screen and STOP here.
+    if not st.session_state.accepted_terms:
+        show_terms_and_conditions()
+        return  # This prevents the rest of the app from running!
+
+    # --- MAIN CHAT INTERFACE (Runs only after acceptance) ---
+    st.sidebar.success("Terms Accepted ✅")
+    st.sidebar.markdown("---")
+    st.sidebar.info("You are chatting with the **TalentScout AI**. \n\nType 'Goodbye' to end the interview at any time.")
+
     st.title("🤖 TalentScout Hiring Assistant")
     st.markdown("Welcome! I am here to help you with your initial screening.")
     # 1. Initialize Chat History
