@@ -1,16 +1,6 @@
-import os
-from openai import OpenAI
-from dotenv import load_dotenv
+import ollama
 
-# Load environment variables from .env file
-load_dotenv()
 
-# Initialize the OpenAI client
-# Ensure you have OPENAI_API_KEY in your .env file
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-# THE SYSTEM PROMPT
-# This is where we define the AI's personality and rules.
 SYSTEM_PROMPT = """
 You are the "TalentScout" Hiring Assistant. Your goal is to screen candidates for technology roles.
 Maintain a professional, friendly, and encouraging tone.
@@ -44,18 +34,20 @@ CONSTRAINTS:
 
 def get_ai_response(messages_history):
     """
-    Sends the message history to the LLM and gets a response.
-    messages_history format: [{"role": "user", "content": "hi"}, ...]
+    Talks to the locally running Llama 3 model.
     """
     try:
-        # We prepend the system prompt to the history to ensure the bot knows its role
-        full_messages = [{"role": "system", "content": SYSTEM_PROMPT}] + messages_history
+        # Convert Streamlit history to Ollama format
+        # Streamlit uses: {"role": "user", "content": "..."}
+        # Ollama uses the same format! Easy.
         
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo", # You can use "gpt-4" if you have access and budget
-            messages=full_messages,
-            temperature=0.7 # Controls creativity (0.7 is a good balance)
-        )
-        return response.choices[0].message.content
+        # We inject the System Prompt at the start of the conversation
+        full_conversation = [{'role': 'system', 'content': SYSTEM_PROMPT}] + messages_history
+
+        response = ollama.chat(model='llama3', messages=full_conversation)
+        
+        return response['message']['content']
+
     except Exception as e:
-        return f"Error: {str(e)}"
+        # If Ollama isn't running, this will error out.
+        return f"Error: Make sure Ollama is running! Details: {str(e)}"
