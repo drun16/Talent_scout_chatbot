@@ -38,8 +38,9 @@ def main():
 
     if user_input := st.chat_input("Type here..."):
         with st.chat_message("user"):
+            st.markdown(user_input)
     # B. Save User Message to History        
-            st.session_state.messages.append({"role": "user", "content": user_input})
+        st.session_state.messages.append({"role": "user", "content": user_input})
 
         with st.spinner("Processing locally... (may take a few seconds)"):
             ai_reply = get_ai_response(st.session_state.messages)
